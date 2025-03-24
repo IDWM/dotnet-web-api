@@ -28,6 +28,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<DataContext>();
+        context.Database.EnsureCreated();
         Seeder.Seed(context);
     }
     catch (Exception ex)

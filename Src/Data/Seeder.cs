@@ -6,9 +6,6 @@ namespace dotnet_web_api.Src.Data
     {
         public static void Seed(DataContext context)
         {
-            // Asegurarse de que la base de datos está creada
-            context.Database.EnsureCreated();
-
             // Verificar si ya hay datos
             if (context.Stores.Any())
             {
