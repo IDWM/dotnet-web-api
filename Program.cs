@@ -1,6 +1,10 @@
+using dotnet_web_api.Src.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddDbContext<DataContext>(options => options.UseInMemoryDatabase("StoreDb"));
 
 var app = builder.Build();
 
@@ -17,5 +21,20 @@ app.Use(
         Console.WriteLine($"Solicitud procesada en {elapsed.TotalMilliseconds}ms");
     }
 );
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<DataContext>();
+        Seeder.Seed(context);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Ocurrió un error al poblar la base de datos.");
+    }
+}
 
 app.Run();
