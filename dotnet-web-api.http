@@ -23,3 +23,21 @@ Accept: application/json
 ### Obtener el producto más caro
 GET {{dotnet_web_api_HostAddress}}/api/Product/expensive
 Accept: application/json
+
+@dotnet_web_api_HostAddress = http://localhost:5000
+
+### Obtener todas las tiendas con información básica
+GET {{dotnet_web_api_HostAddress}}/api/store
+Accept: application/json
+
+### Obtener una tienda específica por ID, incluyendo sus productos
+GET {{dotnet_web_api_HostAddress}}/api/store/1
+Accept: application/json
+
+### Obtener todos los productos de una tienda específica
+GET {{dotnet_web_api_HostAddress}}/api/store/1/products
+Accept: application/json
+
+### Buscar tiendas por nombre
+GET {{dotnet_web_api_HostAddress}}/api/store/search?name=Norte
+Accept: application/json
