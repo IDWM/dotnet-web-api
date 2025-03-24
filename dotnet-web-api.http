@@ -1,6 +1,25 @@
-@dotnet_web_api_HostAddress = http://localhost:5167
+@dotnet_web_api_HostAddress = http://localhost:5000
 
-GET {{dotnet_web_api_HostAddress}}/weatherforecast/
+### Obtener todos los productos
+GET {{dotnet_web_api_HostAddress}}/api/Product
 Accept: application/json
 
-###
+### Obtener un producto específico por ID
+GET {{dotnet_web_api_HostAddress}}/api/Product/1
+Accept: application/json
+
+### Filtrar productos por rango de precio
+GET {{dotnet_web_api_HostAddress}}/api/Product/price-range?min=100&max=500
+Accept: application/json
+
+### Buscar productos por término
+GET {{dotnet_web_api_HostAddress}}/api/Product/search?term=laptop
+Accept: application/json
+
+### Obtener productos de una tienda específica
+GET {{dotnet_web_api_HostAddress}}/api/Product/store/1
+Accept: application/json
+
+### Obtener el producto más caro
+GET {{dotnet_web_api_HostAddress}}/api/Product/expensive
+Accept: application/json
