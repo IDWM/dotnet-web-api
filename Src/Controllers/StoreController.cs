@@ -7,16 +7,16 @@ namespace dotnet_web_api.Src.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class StoreController(DataContext context) : ControllerBase
+    public class StoreController(DataContext dataContext) : ControllerBase
     {
-        private readonly DataContext _context = context;
+        private readonly DataContext _dataContext = dataContext;
 
         // GET: api/store
         // Obtiene todas las tiendas con información básica
         [HttpGet]
         public async Task<ActionResult<IEnumerable<StoreDto>>> GetStores()
         {
-            var stores = await _context
+            var stores = await _dataContext
                 .Stores.Select(s => new StoreDto
                 {
                     Id = s.Id,
@@ -35,26 +35,15 @@ namespace dotnet_web_api.Src.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<StoreWithProductsDto>> GetStore(int id)
         {
-            var store = await _context
-                .Stores.Include(s => s.Products)
-                .Where(s => s.Id == id)
-                .Select(s => new StoreWithProductsDto
+            // Primero obtenemos la tienda
+            var store = await _dataContext
+                .Stores.Where(s => s.Id == id)
+                .Select(s => new
                 {
-                    Id = s.Id,
-                    Name = s.Name,
-                    Address = s.Address,
-                    Email = s.Email,
-                    Products = s
-                        .Products.Select(p => new ProductDto
-                        {
-                            Id = p.Id,
-                            Name = p.Name,
-                            Description = p.Description,
-                            Price = p.Price,
-                            StoreId = p.StoreId,
-                            StoreName = s.Name,
-                        })
-                        .ToList(),
+                    s.Id,
+                    s.Name,
+                    s.Address,
+                    s.Email,
                 })
                 .FirstOrDefaultAsync();
 
@@ -63,7 +52,29 @@ namespace dotnet_web_api.Src.Controllers
                 return NotFound();
             }
 
-            return store;
+            var products = await _dataContext
+                .Products.Where(p => p.StoreId == id)
+                .Select(p => new ProductDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Description = p.Description,
+                    Price = p.Price,
+                    StoreId = p.StoreId,
+                    StoreName = store.Name,
+                })
+                .ToListAsync();
+
+            var storeWithProducts = new StoreWithProductsDto
+            {
+                Id = store.Id,
+                Name = store.Name,
+                Address = store.Address,
+                Email = store.Email,
+                Products = products,
+            };
+
+            return storeWithProducts;
         }
 
         // GET: api/store/5/products
@@ -71,14 +82,14 @@ namespace dotnet_web_api.Src.Controllers
         [HttpGet("{id}/products")]
         public async Task<ActionResult<IEnumerable<ProductDto>>> GetStoreProducts(int id)
         {
-            var store = await _context.Stores.FindAsync(id);
+            var store = await _dataContext.Stores.FindAsync(id);
 
             if (store == null)
             {
                 return NotFound();
             }
 
-            var products = await _context
+            var products = await _dataContext
                 .Products.Where(p => p.StoreId == id)
                 .Select(p => new ProductDto
                 {
@@ -99,7 +110,7 @@ namespace dotnet_web_api.Src.Controllers
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<StoreDto>>> SearchStores([FromQuery] string name)
         {
-            var stores = await _context
+            var stores = await _dataContext
                 .Stores.Where(s => s.Name.Contains(name))
                 .Select(s => new StoreDto
                 {
