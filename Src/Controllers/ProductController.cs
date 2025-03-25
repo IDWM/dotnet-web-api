@@ -1,22 +1,22 @@
-using dotnet_web_api.Src.Data;
+using dotnet_web_api.Src.Interfaces;
 using dotnet_web_api.Src.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace dotnet_web_api.Src.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ProductController(DataContext context) : ControllerBase
+    public class ProductController(IProductRepository productRepository) : ControllerBase
     {
-        private readonly DataContext _context = context;
+        private readonly IProductRepository _productRepository = productRepository;
 
         // GET: api/Product
         // Obtiene todos los productos
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
-            throw new NotImplementedException();
+            var products = await _productRepository.GetAllProductsAsync();
+            return Ok(products);
         }
 
         // GET: api/Product/5
@@ -24,7 +24,12 @@ namespace dotnet_web_api.Src.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
-            throw new NotImplementedException();
+            var product = await _productRepository.GetProductByIdAsync(id);
+
+            if (product == null)
+                return NotFound();
+
+            return Ok(product);
         }
 
         // GET: api/Product/price-range?min=100&max=500
@@ -35,7 +40,11 @@ namespace dotnet_web_api.Src.Controllers
             [FromQuery] float max
         )
         {
-            throw new NotImplementedException();
+            if (min > max)
+                return BadRequest("El valor mínimo no puede ser mayor que el máximo");
+
+            var products = await _productRepository.GetProductsByPriceRangeAsync(min, max);
+            return Ok(products);
         }
 
         // GET: api/Product/search?term=laptop
@@ -45,7 +54,8 @@ namespace dotnet_web_api.Src.Controllers
             [FromQuery] string term
         )
         {
-            throw new NotImplementedException();
+            var products = await _productRepository.SearchProductsAsync(term);
+            return Ok(products);
         }
 
         // GET: api/Product/store/1
@@ -53,7 +63,8 @@ namespace dotnet_web_api.Src.Controllers
         [HttpGet("store/{storeId}")]
         public async Task<ActionResult<IEnumerable<Product>>> GetProductsByStore(int storeId)
         {
-            throw new NotImplementedException();
+            var products = await _productRepository.GetProductsByStoreAsync(storeId);
+            return Ok(products);
         }
 
         // GET: api/Product/group-by-store
@@ -61,7 +72,8 @@ namespace dotnet_web_api.Src.Controllers
         [HttpGet("group-by-store")]
         public async Task<ActionResult<IEnumerable<object>>> GetProductsGroupedByStore()
         {
-            throw new NotImplementedException();
+            var groupedProducts = await _productRepository.GetProductsGroupedByStoreAsync();
+            return Ok(groupedProducts);
         }
 
         // GET: api/Product/expensive
@@ -69,7 +81,12 @@ namespace dotnet_web_api.Src.Controllers
         [HttpGet("expensive")]
         public async Task<ActionResult<Product>> GetMostExpensiveProduct()
         {
-            throw new NotImplementedException();
+            var product = await _productRepository.GetMostExpensiveProductAsync();
+
+            if (product == null)
+                return NotFound("No se encontraron productos");
+
+            return Ok(product);
         }
     }
 }
